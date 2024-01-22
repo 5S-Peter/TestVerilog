@@ -15,6 +15,16 @@ set s5s_wave_struct [list \
       "-" ${special_alu_path}.b_result \
       "-" ${special_alu_path}.b_operation \
     ] \
+    {INTERNAL} [list \
+      "-" ${special_alu_path}.a_hs \
+      "-" ${special_alu_path}.b_hs \
+      "-" ${special_alu_path}.cnt \
+      "-" ${special_alu_path}.fifo \
+      "-" ${special_alu_path}.fifo_e0 \
+      "-" ${special_alu_path}.fifo_e1 \
+      "-" ${special_alu_path}.result \
+      "-" ${special_alu_path}.wr_ptr \
+    ] \
   ] \
 ]
 

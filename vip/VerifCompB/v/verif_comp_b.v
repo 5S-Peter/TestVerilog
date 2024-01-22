@@ -24,7 +24,7 @@ module verif_comp_b (
   wire [1:0] state;
   assign state = {b_valid, b_ready};
 
-  reg[3:0] wait_time;
+  reg[4:0] wait_time;
   always @(posedge clk or negedge rstn) begin
     if (! rstn) begin
       wait_time <= 1;
