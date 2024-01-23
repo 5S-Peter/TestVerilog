@@ -113,5 +113,99 @@ module special_alu_tb_checker_scoreboard (
     end
   end
 
+  // -----------------
+  // CHECKER
+  // -----------------
+  reg        a_valid_check_r;
+  reg        a_ready_check_r;
+  reg [ 7:0] a_operand_check_r;
+  reg        b_valid_check_r;
+  reg        b_ready_check_r;
+  reg [ 2:0] b_operation_check_r;
+  reg [10:0] b_result_check_r;
+
+  wire a_valid_check_chg;
+  wire a_ready_check_chg;
+  wire a_operand_check_chg;
+  wire b_valid_check_chg;
+  wire b_ready_check_chg;
+  wire b_operation_check_chg;
+  wire b_result_check_chg;
+
+  assign a_valid_check_chg     = (a_valid      == a_valid_check_r     ) ? 1'b0 : 1'b1 ;
+  assign a_ready_check_chg     = (a_ready      == a_ready_check_r     ) ? 1'b0 : 1'b1 ;
+  assign a_operand_check_chg   = (a_operand    == a_operand_check_r   ) ? 1'b0 : 1'b1 ;
+  assign b_valid_check_chg     = (b_valid      == b_valid_check_r     ) ? 1'b0 : 1'b1 ;
+  assign b_ready_check_chg     = (b_ready      == b_ready_check_r     ) ? 1'b0 : 1'b1 ;
+  assign b_operation_check_chg = (b_operation  == b_operation_check_r ) ? 1'b0 : 1'b1 ;
+  assign b_result_check_chg    = (b_result     == b_result_check_r    ) ? 1'b0 : 1'b1 ;
+
+  wire a_valid_check_rise;
+  wire a_valid_check_fall;
+  wire a_ready_check_rise;
+  wire a_ready_check_fall;
+  wire b_valid_check_rise;
+  wire b_valid_check_fall;
+  wire b_ready_check_rise;
+  wire b_ready_check_fall;
+
+  assign a_valid_check_rise = a_valid_check_chg &  a_valid;
+  assign a_ready_check_rise = a_ready_check_chg &  a_ready;
+  assign b_valid_check_rise = b_valid_check_chg &  b_valid;
+  assign b_ready_check_rise = b_ready_check_chg &  b_ready;
+  assign a_valid_check_fall = a_valid_check_chg & ~a_valid;
+  assign a_ready_check_fall = a_ready_check_chg & ~a_ready;
+  assign b_valid_check_fall = b_valid_check_chg & ~b_valid;
+  assign b_ready_check_fall = b_ready_check_chg & ~b_ready;
+
+  always @(posedge clk or negedge rstn) begin
+    if (!rstn) begin
+      a_valid_check_r     <=  1'b0;
+      a_ready_check_r     <=  1'b1;
+      a_operand_check_r   <=  7'h00;
+      b_valid_check_r     <=  1'b0;
+      b_ready_check_r     <=  1'b0;
+      b_operation_check_r <=  3'h4;
+      b_result_check_r    <= 11'h0;
+    end else begin
+      a_valid_check_r     <= a_valid     ;
+      a_ready_check_r     <= a_ready     ;
+      a_operand_check_r   <= a_operand   ;
+      b_valid_check_r     <= b_valid     ;
+      b_ready_check_r     <= b_ready     ;
+      b_operation_check_r <= b_operation ;
+      b_result_check_r    <= b_result    ;
+    end
+  end
+
+  always @(posedge clk) begin
+    if (rstn) begin
+      // CHK 000 - a_valid can only fall when a_ready is high
+      if (a_valid_check_fall && ~a_ready_check_r) begin
+        $display("ERR CHK 000 - a_valid can only fall after a handshake!");
+      end
+
+      // CHK 001 - operand can only change on new transaction or reset
+      if (
+        (a_operand_check_chg) &&
+        ~ (a_valid_check_rise | (a_valid & a_ready_check_r))
+      ) begin
+        $display("ERR CHK 001 - @%5t a_operand changed during IDLE interface or during a transaction!", $time);
+      end
+
+      // CHK 002 - b_valid can only fall when b_ready is high
+      if (b_valid_check_fall && ~b_ready_check_r) begin
+        $display("ERR CHK 002 - @%5t b_valid can only fall after a handshake!", $time);
+      end
+
+      // CHK 003 - operation can only change on hadshake
+      if (
+        (b_operation_check_chg) && ~(b_valid_check_r & b_ready_check_r)
+      ) begin
+        $display("ERR CHK 003 - @%5t b_operation changed without handshake!", $time);
+      end
+
+    end
+  end
 
 endmodule
