@@ -53,16 +53,11 @@ module special_alu (
     if (!rstn) begin
       a_ready_r <= 1'b1;
     end else begin
-      if (cnt < 8) begin
-        a_ready_r <= 1'b1;
-      end else begin
-        case ({a_hs, b_hs})
-          2'b00 : a_ready_r <= 1'b0;
-          2'b01 : a_ready_r <= 1'b1;
-          2'b10 : begin end //this can't happen
-          2'b11 : a_ready_r <= 1'b0;
-        endcase
-      end
+      case (cnt)
+        0, 1, 2, 3, 4, 5, 6 : a_ready_r <= 1'b1;
+        7                   : a_ready_r <= a_hs ? 1'b0 : 1'b1;
+        default : begin end // this should not happen
+      endcase
     end
   end
 
